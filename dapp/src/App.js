@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Questions from "./Questions";
-import WriteDrizzle from './WriteDrizzle';
+import AskQuestion from './AskQuestion';
 
 class App extends Component {
   state = { loading: true, drizzleState: null };
@@ -34,7 +34,7 @@ class App extends Component {
           drizzle={this.props.drizzle}
           drizzleState={this.state.drizzleState}
         />
-        <WriteDrizzle
+        <AskQuestion
           drizzle={this.props.drizzle}
           drizzleState={this.state.drizzleState}
         />

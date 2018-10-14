@@ -8,7 +8,12 @@ import { Drizzle, generateStore } from 'drizzle';
 import QAOracle from './contracts/QAOracle.json';
 
 // let drizzle know what contracts we want
-const options = { contracts: [QAOracle] };
+const options = {
+  contracts: [QAOracle],
+  events: {
+    QAOracle: ['QuestionAdded']
+  }
+};
 // setup the drizzle store and drizzle
 const drizzleStore = generateStore(options);
 const drizzle = new Drizzle(options, drizzleStore);
