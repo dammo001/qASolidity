@@ -1,5 +1,5 @@
-var QAToken = artifacts.require("QAToken");
+var QAOracle = artifacts.require("QAOracle");
 
 module.exports = function(deployer) {
-  deployer.deploy(QAToken);
+  deployer.deploy(QAOracle);
 };

@@ -13,7 +13,6 @@ contract QAOracle is QAToken {
   struct Question {
     address qAddress;
     string qText;
-    uint256 bounty;
     string answer;
   }
 
@@ -37,15 +36,11 @@ contract QAOracle is QAToken {
     require(approve(owner, 1));
     _questionId++;
     emit QuestionAdded( msg.sender, _questionId, question );
-    questions[_questionId] = Question(msg.sender, question, msg.value, '');
+    questions[_questionId] = Question(msg.sender, question, '');
   }
 
   function transferTo(address addr) {
     transferFrom(msg.sender, addr, 1);
-  }
-
-  function getQuestionBounty(uint qId) public view returns (uint256) {
-    return questions[qId].bounty;
   }
 
   function getQuestionText(uint qId) public view returns (string) {
@@ -56,20 +51,22 @@ contract QAOracle is QAToken {
     return questions[qId].answer;
   }
 
-  function getAccountBalance(address acct) public view returns (uint256) {
-    return balanceOf(acct);
-  }
-
-  function getAllowance(address spender) public view returns (uint256) {
-    return allowance(msg.sender, spender);
+  function getAcctBalance(address addr) public view returns (uint256) {
+    return balanceOf(addr);
   }
 
   function answerQuestion(uint qId, address aAddr, string answer) public isOwner {
     Question storage question = questions[qId];
-    require (bytes(question.answer).length == 0);
-    require (transferFrom(question.qAddress, owner, 1));
-    require (approve(aAddr, 1));
+    require(bytes(question.answer).length == 0);
+    require(transferFrom(question.qAddress, owner, 1));
+    require(approve(aAddr, 1));
     question.answer = answer;
     emit QuestionAnswered( qId, answer );
   }
+
+  /* function getTokenReward(uint qId) public {
+    Question storage question = questions[qId];
+    require (msg.sender == question.answerer);
+    require (transferFrom(owner, msg.sender, 1));
+  } */
 }
