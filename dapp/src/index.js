@@ -4,7 +4,16 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import { Drizzle, generateStore } from 'drizzle';
+import QAOracle from './contracts/QAOracle.json';
+
+// let drizzle know what contracts we want
+const options = { contracts: [QAOracle] };
+// setup the drizzle store and drizzle
+const drizzleStore = generateStore(options);
+const drizzle = new Drizzle(options, drizzleStore);
+
+ReactDOM.render(<App drizzle={drizzle} />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

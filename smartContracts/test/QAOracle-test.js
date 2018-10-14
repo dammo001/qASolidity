@@ -91,6 +91,29 @@ contract('QAOracle', (walletAddresses) => {
       res.should.equal('');
     });
 
+    it('should return the correct total number of questions', async() => {
+      let totalQuestions;
+      totalQuestions = await contract.getQuestionsTotal();
+      totalQuestions.toString().should.equal('0');
+      await contract.askQuestion(q1, { from: asker });
+      await helpers.assertEvent(
+        contract.QuestionAdded(),
+        { askerAddress: asker, qId: '1', qText: q1  },
+      );
+
+      totalQuestions = await contract.getQuestionsTotal();
+      totalQuestions.toString().should.equal('1');
+
+      await contract.askQuestion(q2, { from: asker });
+      await helpers.assertEvent(
+        contract.QuestionAdded(),
+        { askerAddress: asker, qId: '2', qText: q2 },
+      );
+
+      totalQuestions = await contract.getQuestionsTotal();
+      totalQuestions.toString().should.equal('2');
+    });
+
   });
 
   describe('answering a question', () => {

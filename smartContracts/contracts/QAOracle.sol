@@ -2,10 +2,11 @@ pragma solidity ^0.4.24;
 
 import './QAToken.sol';
 
+//TODO seperate token logic into its own contract
 contract QAOracle is QAToken {
   address public owner;
-  uint private _questionId;
-  mapping (uint => Question) public questions;
+  uint256 private _questionId;
+  mapping (uint256 => Question) public questions;
 
   event QuestionAdded( address askerAddress, uint qId, string qText );
   event QuestionAnswered( uint qId , string aText );
@@ -26,6 +27,27 @@ contract QAOracle is QAToken {
     _;
   }
 
+  function uint2str(uint i) internal pure returns (string){
+    if (i == 0) return "0";
+    uint j = i;
+    uint length;
+    while (j != 0){
+        length++;
+        j /= 10;
+    }
+    bytes memory bstr = new bytes(length);
+    uint k = length - 1;
+    while (i != 0){
+        bstr[k--] = byte(48 + i % 10);
+        i /= 10;
+    }
+    return string(bstr);
+  }
+  //TODO figure out correct return type for frontend, bignum causes error
+  function getQuestionsTotal() public view returns(string) {
+    return uint2str(_questionId);
+  }
+
   //TODO investigate just returning the tokenContract instance to work with
   function sendTokens(address to, uint amt) public {
     transfer(to, amt);
@@ -39,15 +61,15 @@ contract QAOracle is QAToken {
     questions[_questionId] = Question(msg.sender, question, '');
   }
 
-  function transferTo(address addr) {
+  function transferTo(address addr) public {
     transferFrom(msg.sender, addr, 1);
   }
 
-  function getQuestionText(uint qId) public view returns (string) {
+  function getQuestionText(uint256 qId) public view returns (string) {
     return questions[qId].qText;
   }
 
-  function getQuestionAnswer(uint qId) public view returns (string) {
+  function getQuestionAnswer(uint256 qId) public view returns (string) {
     return questions[qId].answer;
   }
 
@@ -55,7 +77,7 @@ contract QAOracle is QAToken {
     return balanceOf(addr);
   }
 
-  function answerQuestion(uint qId, address aAddr, string answer) public isOwner {
+  function answerQuestion(uint256 qId, address aAddr, string answer) public isOwner {
     Question storage question = questions[qId];
     require(bytes(question.answer).length == 0);
     require(transferFrom(question.qAddress, owner, 1));
