@@ -30,6 +30,7 @@ class Tokens extends React.Component {
   _getTokens = () => {
     const { contract } = this._getContractProps();
     const acctAddress = this.props.drizzleState.accounts[0];
+    console.log("acct address ", acctAddress);
     contract.methods.mint.cacheSend(acctAddress, 10);
   }
 

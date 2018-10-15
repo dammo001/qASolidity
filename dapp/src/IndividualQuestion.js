@@ -6,7 +6,7 @@ class IndividualQuestion extends React.Component {
 
   componentDidMount() {
     const { contract } = this._getContractProps();
-    const qKey = contract.methods.getQuestionAnswer.cacheCall(this.props.questionId);
+    const qKey = contract.methods.getQuestion.cacheCall(this.props.questionId);
     this.setState({ qKey });
     //Drizzle polling doesn't seem to work for events, add them manually...
     contract.events.QuestionUpdated({}, (err, event) => {
@@ -31,6 +31,7 @@ class IndividualQuestion extends React.Component {
   }
 
   _showAnswerInput = () => {
+    console.log("wtf ", this.props.drizzleState.accounts[0])
     if (this.props.drizzleState.accounts[0] === this.props.askerAddress) return null;
     return (
       <Fragment>
@@ -71,8 +72,8 @@ class IndividualQuestion extends React.Component {
 
   render() {
     const { store } = this._getContractProps();
-    let answer = store.getQuestionAnswer[this.state.qKey];
-    answer = answer && answer.value;
+    let answer = store.getQuestion[this.state.qKey];
+    answer = answer && answer.value && answer.value[3];
 
     return (
       <div className="individual-question">
