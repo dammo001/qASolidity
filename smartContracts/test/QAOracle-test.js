@@ -28,9 +28,25 @@ const _getEvent = (event, timeout = 3000) => {
 }
 
 const _getIdFromQuestionCreate = async(contract) => {
-  const res = await _getEvent(contract.QuestionAdded());
+  const res = await _getEvent(contract.QuestionUpdated());
   return res.args.qId.toString();
 }
+
+/*
+* GetQuestion returns in the format
+
+* _uint2str(qId),
+* questions[qId].qAddress,
+* questions[qId].qText,
+* questions[qId].answer,
+* questions[qId].requestedResponder
+*/
+
+const _id = (q) => q[0];
+const _qAddr = (q) => q[1];
+const _qText = (q) => q[2];
+const _answer = (q) => q[3];
+const _req = (q) => q[4];
 
 contract('QAOracle', (walletAddresses) => {
   const owner = walletAddresses[0];
@@ -53,27 +69,27 @@ contract('QAOracle', (walletAddresses) => {
   });
 
   describe('asking a question', () => {
-    it('should add a question and emit a question ID', async() => {
+    it('should add a question and emit the correct data', async() => {
       const check = await contract.askQuestion(q1, { from: asker });
       await helpers.assertEvent(
-        contract.QuestionAdded(),
+        contract.QuestionUpdated(),
         { askerAddress: asker, qId: '1', qText: q1 },
       );
 
-      const res = await contract.getQuestionText('1');
-      res.should.equal(q1);
+      const res = await contract.getQuestion('1');
+      _qText(res).should.equal(q1);
     });
 
     it('should increment a question ID when multiple questions are added', async() => {
       await contract.askQuestion(q1, { from: asker });
       await helpers.assertEvent(
-        contract.QuestionAdded(),
+        contract.QuestionUpdated(),
         { askerAddress: asker, qId: '1', qText: q1  },
       );
 
       await contract.askQuestion(q2, { from: asker });
       await helpers.assertEvent(
-        contract.QuestionAdded(),
+        contract.QuestionUpdated(),
         { askerAddress: asker, qId: '2', qText: q2 },
       );
     });
@@ -85,33 +101,33 @@ contract('QAOracle', (walletAddresses) => {
     it('should return an empty string if there is no question for that questionId', async() => {
       await contract.askQuestion(q1);
       const qId = await _getIdFromQuestionCreate(contract);
-      const res = await contract.getQuestionText('2');
+      const res = await contract.getQuestion('2');
       qId.should.not.equal('2');
-      res.should.not.equal(q1);
-      res.should.equal('');
+      _qText(res).should.not.equal(q1);
+      _qText(res).should.equal('');
     });
 
     it('should return the correct total number of questions', async() => {
       let totalQuestions;
       totalQuestions = await contract.getQuestionsTotal();
-      totalQuestions.toString().should.equal('0');
+      totalQuestions.should.equal('0');
       await contract.askQuestion(q1, { from: asker });
       await helpers.assertEvent(
-        contract.QuestionAdded(),
+        contract.QuestionUpdated(),
         { askerAddress: asker, qId: '1', qText: q1  },
       );
 
       totalQuestions = await contract.getQuestionsTotal();
-      totalQuestions.toString().should.equal('1');
+      totalQuestions.should.equal('1');
 
       await contract.askQuestion(q2, { from: asker });
       await helpers.assertEvent(
-        contract.QuestionAdded(),
+        contract.QuestionUpdated(),
         { askerAddress: asker, qId: '2', qText: q2 },
       );
 
       totalQuestions = await contract.getQuestionsTotal();
-      totalQuestions.toString().should.equal('2');
+      totalQuestions.should.equal('2');
     });
 
   });
@@ -121,8 +137,8 @@ contract('QAOracle', (walletAddresses) => {
       await contract.askQuestion(q1, { from: asker });
       const qId = await _getIdFromQuestionCreate(contract);
       await contract.answerQuestion(qId, a1);
-      const res = await contract.getQuestionAnswer(qId);
-      res.should.equal(a1);
+      const res = await contract.getQuestion(qId);
+      _answer(res).should.equal(a1);
     });
 
     it('should emit an "answerQuestion" event when a question is answered', async() => {
@@ -130,22 +146,59 @@ contract('QAOracle', (walletAddresses) => {
       const qId = await _getIdFromQuestionCreate(contract);
       await contract.answerQuestion(qId, a1);
       await helpers.assertEvent(
-        contract.QuestionAnswered(),
-        { qId: qId, aText: a1},
+        contract.QuestionUpdated(),
+        { qId: qId, answer: a1},
       );
     });
 
+    it('should not allow a question to be answered with a blank response', async() => {
+      await contract.askQuestion(q1, { from: asker });
+      const qId = await _getIdFromQuestionCreate(contract);
+      await contract.assignQuestion(qId, qAddress2, { from: asker });
+      await helpers.expectThrow(contract.answerQuestion(qId, '', { from: qAddress2 }));
+    });
+  });
 
+  describe('assigning a question', () => {
+    it('should only allow the question asker to set a "requestedResponder"', async() => {
+      await contract.askQuestion(q1, { from: asker });
+      const qId = await _getIdFromQuestionCreate(contract);
+      await helpers.expectThrow(contract.assignQuestion(qId, qAddress2));
+    });
 
-    // it('should pay an answerer a bounty associated with the question', async() => {
-    //   const bounty = web3.toWei(.005, 'ether');
-    //   const initialBalance = web3.eth.getBalance(aAddress1);
-    //   await contract.askQuestion(q1, { value: bounty });
-    //   await contract.answerQuestion(asker, aAddress1, a1);
-    //   const finalBalance = web3.eth.getBalance(aAddress1);
-    //   const balanceDelta = (finalBalance - initialBalance).toString();
-    //   balanceDelta.should.equal(bounty);
-    // });
+    it('should allow a "requestedResponder" to be set', async() => {
+      await contract.askQuestion(q1, { from: asker });
+      const qId = await _getIdFromQuestionCreate(contract);
+      await contract.assignQuestion(qId, qAddress2, { from: asker });
+      const res = await contract.getQuestion(qId);
+      _req(res).should.equal(qAddress2);
+    });
+
+    it('should emit the correct event when a "requestedResponder" is assigned', async() => {
+      await contract.askQuestion(q1, { from: asker });
+      const qId = await _getIdFromQuestionCreate(contract);
+      await contract.assignQuestion(qId, qAddress2, { from: asker });
+      await helpers.assertEvent(
+        contract.QuestionUpdated(),
+        { qId: qId, requestedResponder: qAddress2},
+      );
+    });
+
+    it('should not allow someone other than a requestedResponder to answer a question if it"s set', async() => {
+      await contract.askQuestion(q1, { from: asker });
+      const qId = await _getIdFromQuestionCreate(contract);
+      await contract.assignQuestion(qId, qAddress2, { from: asker });
+      await helpers.expectThrow(contract.answerQuestion(qId, a1, { from: aAddress1 }));
+    });
+
+    it('should allow a requestedResponder to answer a question if it"s set', async() => {
+      await contract.askQuestion(q1, { from: asker });
+      const qId = await _getIdFromQuestionCreate(contract);
+      await contract.assignQuestion(qId, qAddress2, { from: asker });
+      await contract.answerQuestion(qId, a1, { from: qAddress2 });
+      const res = await contract.getQuestion(qId);
+      _answer(res).should.equal(a1);
+    });
   });
 
 });

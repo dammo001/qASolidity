@@ -1,15 +1,17 @@
 import React, { Fragment } from "react";
+import SpecifyUser from './SpecifyUser';
 
 class IndividualQuestion extends React.Component {
-  state = { qKey: null, value: '' };
+  state = { qKey: null, value: '', showSpecifyAnswer: false };
 
   componentDidMount() {
     const { contract } = this._getContractProps();
     const qKey = contract.methods.getQuestionAnswer.cacheCall(this.props.questionId);
     this.setState({ qKey });
     //Drizzle polling doesn't seem to work for events, add them manually...
-    contract.events.QuestionAnswered({}, (err, event) => {
-      contract.methods.getQuestionAnswer.cacheCall(this.props.questionId);
+    contract.events.QuestionUpdated({}, (err, event) => {
+      //TODO should filter this so it only makes a call if it was w. this ID
+      contract.methods.getQuestion.cacheCall(this.props.questionId);
     });
   }
 
@@ -29,6 +31,7 @@ class IndividualQuestion extends React.Component {
   }
 
   _showAnswerInput = () => {
+    if (this.props.drizzleState.accounts[0] === this.props.askerAddress) return null;
     return (
       <Fragment>
         <input type="text" onChange={this.onChange} value={this.state.value} />
@@ -46,6 +49,26 @@ class IndividualQuestion extends React.Component {
     );
   }
 
+  _renderSpecifyAnswer() {
+    if (this.props.drizzleState.accounts[0] !== this.props.askerAddress) return null;
+    return (
+      <button className="btn btn-secondary" onClick={() =>
+        this.setState({ showSpecifyAnswer: !this.state.showSpecifyAnswer })
+      }>
+        Request a response from a specific user
+      </button>
+    );
+  }
+
+  _showSpecifyInput() {
+    if (!this.state.showSpecifyAnswer) return null;
+    return (
+      <SpecifyUser
+        {...this.props}
+      />
+    );
+  }
+
   render() {
     const { store } = this._getContractProps();
     let answer = store.getQuestionAnswer[this.state.qKey];
@@ -56,6 +79,8 @@ class IndividualQuestion extends React.Component {
         {this.props.questionText}
         {this._renderAnswer(answer)}
         {!answer && this._showAnswerInput()}
+        {this._renderSpecifyAnswer()}
+        {this._showSpecifyInput()}
       </div>
     );
   }

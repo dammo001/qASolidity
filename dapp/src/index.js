@@ -14,7 +14,7 @@ const options = {
     accounts: 3000,
   },
   events: {
-    QAOracle: ['QuestionAdded', 'TokensUpdated', 'QuestionAnswered']
+    QAOracle: ['QuestionUpdated']
   }
 };
 // setup the drizzle store and drizzle

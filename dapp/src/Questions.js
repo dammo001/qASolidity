@@ -63,18 +63,17 @@ class Questions extends React.Component {
       nextQuestion && questions.push(nextQuestion);
     });
 
-    return questions.map((question,i) => {
-      const questionId = i+1;
+    return questions.map((question) => {
       let values = question.value;
-      //question has form [askerAddress, questionText, questionAnswer, requestedResponder]
+      //question has form [questionId, askerAddress, questionText, questionAnswer, requestedResponder]
       return (
         <IndividualQuestion
-          key={questionId}
-          askerAddress={values[0]}
-          questionText={values[1]}
-          answer={values[2]}
-          requestedResponder={values[3]}
-          questionId={questionId}
+          key={values[0]}
+          askerAddress={values[1]}
+          questionText={values[2]}
+          answer={values[3]}
+          requestedResponder={values[4]}
+          questionId={values[0]}
           {...this.props}
         />
       );
