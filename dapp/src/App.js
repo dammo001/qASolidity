@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import Questions from "./Questions";
 import AskQuestion from './AskQuestion';
+import Tokens from './Tokens';
 
 class App extends Component {
   state = { loading: true, drizzleState: null };
@@ -27,9 +28,13 @@ class App extends Component {
   }
 
   render() {
-    if (this.state.loading) return "Loading Drizzle...";
+    if (this.state.loading) return "Loading App...";
     return (
       <div className="App">
+        <Tokens
+          drizzle={this.props.drizzle}
+          drizzleState={this.state.drizzleState}
+        />
         <Questions
           drizzle={this.props.drizzle}
           drizzleState={this.state.drizzleState}

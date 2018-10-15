@@ -1,14 +1,7 @@
 import React from "react";
 
-class SetString extends React.Component {
-  state = { stackId: null, value: '' };
-
-  handleKeyDown = e => {
-    // if the enter key is pressed, set the value with the string
-    if (e.keyCode === 13) {
-      this.setValue(this.state.value);
-    }
-  };
+class AskQuestion extends React.Component {
+  state = { stackId: null, value: '', txStatus: ''};
 
   handleClick = () => {
     this.setValue(this.state.value);
@@ -28,7 +21,7 @@ class SetString extends React.Component {
     });
 
     // save the `stackId` for later reference
-    this.setState({ stackId, value: '' });
+    this.setState({ stackId });
   };
 
   getTxStatus = () => {
@@ -40,21 +33,20 @@ class SetString extends React.Component {
 
     // if transaction hash does not exist, don't display anything
     if (!txHash) return null;
-
     // otherwise, return the transaction status
-    return `Question add was a ${transactions[txHash].status}`;
+    return `Question add has status: ${transactions[txHash].status}`;
   };
 
   render() {
     return (
-      <div>
-        <label for="ask-question">Ask a question!</label>
-        <input id="ask-question" type="text" onChange={this.onChange} onKeyDown={this.handleKeyDown} value={this.state.value}/>
-        <button onClick={this.handleClick} >Submit your question</button>
+      <div className="form-group ask-question">
+        <label className="col-sm-2 control-label">Ask a question!</label>
+        <input className="form-control" id="ask-question" type="text" onChange={this.onChange} value={this.state.value}/>
+        <button className="btn btn-success" onClick={this.handleClick}>Submit your question</button>
         <div>{this.getTxStatus()}</div>
       </div>
     );
   }
 }
 
-export default SetString;
+export default AskQuestion;

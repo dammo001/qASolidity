@@ -15,6 +15,7 @@ contract QAOracle is QAToken {
     address qAddress;
     string qText;
     string answer;
+    address requestedResponder;
   }
 
   constructor () public {
@@ -27,63 +28,50 @@ contract QAOracle is QAToken {
     _;
   }
 
-  function uint2str(uint i) internal pure returns (string){
-    if (i == 0) return "0";
-    uint j = i;
-    uint length;
-    while (j != 0){
-        length++;
-        j /= 10;
-    }
-    bytes memory bstr = new bytes(length);
-    uint k = length - 1;
-    while (i != 0){
-        bstr[k--] = byte(48 + i % 10);
-        i /= 10;
-    }
-    return string(bstr);
-  }
-  //TODO figure out correct return type for frontend, bignum causes error
-  function getQuestionsTotal() public view returns(string) {
-    return uint2str(_questionId);
-  }
-
-  //TODO investigate just returning the tokenContract instance to work with
-  function sendTokens(address to, uint amt) public {
-    transfer(to, amt);
-  }
-
   function askQuestion(string question) public payable {
     require(balanceOf(msg.sender) >= 1);
     require(approve(owner, 1));
     _questionId++;
     emit QuestionAdded( msg.sender, _questionId, question );
-    questions[_questionId] = Question(msg.sender, question, '');
+    questions[_questionId] = Question(msg.sender, question, '', address(0));
   }
 
-  function transferTo(address addr) public {
-    transferFrom(msg.sender, addr, 1);
+  function answerQuestion(uint256 qId, string answer) public {
+    Question storage question = questions[qId];
+    require(bytes(question.answer).length == 0);
+    require(bytes(answer).length > 0);
+    //TODO create oracle?
+    /* require(transferFrom(question.qAddress, owner, 1)); */
+    mint(msg.sender, 1);
+    question.answer = answer;
+    emit QuestionAnswered( qId, answer );
   }
 
+  //Getters
   function getQuestionText(uint256 qId) public view returns (string) {
     return questions[qId].qText;
+  }
+
+  function getQuestionAsker(uint qId) public view returns (address) {
+    return questions[qId].qAddress;
   }
 
   function getQuestionAnswer(uint256 qId) public view returns (string) {
     return questions[qId].answer;
   }
 
-  function getAcctBalance(address addr) public view returns (uint256) {
-    return balanceOf(addr);
+  function getQuestion(uint256 qId) public view returns (address, string, string, address) {
+    return (
+      questions[qId].qAddress,
+      questions[qId].qText,
+      questions[qId].answer,
+      questions[qId].requestedResponder
+    );
   }
 
-  function answerQuestion(uint256 qId, address aAddr, string answer) public isOwner {
-    Question storage question = questions[qId];
-    require(bytes(question.answer).length == 0);
-    require(transferFrom(question.qAddress, owner, 1));
-    require(approve(aAddr, 1));
-    question.answer = answer;
-    emit QuestionAnswered( qId, answer );
+  //TODO figure out correct return type for frontend, bignum causes error
+  function getQuestionsTotal() public view returns(string) {
+    return _uint2str(_questionId);
   }
 
   /* function getTokenReward(uint qId) public {

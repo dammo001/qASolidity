@@ -10,8 +10,11 @@ import QAOracle from './contracts/QAOracle.json';
 // let drizzle know what contracts we want
 const options = {
   contracts: [QAOracle],
+  polls: {
+    accounts: 3000,
+  },
   events: {
-    QAOracle: ['QuestionAdded']
+    QAOracle: ['QuestionAdded', 'TokensUpdated', 'QuestionAnswered']
   }
 };
 // setup the drizzle store and drizzle

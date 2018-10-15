@@ -1,7 +1,8 @@
 import React from "react";
+import IndividualQuestion from './IndividualQuestion';
 
 class Questions extends React.Component {
-  state = { qKey:null, dataKeys: [], questions: null, updating: false};
+  state = { qKey: null, dataKeys: [], questions: null, updating: false };
 
   componentDidMount() {
     const { contract } = this._getContractProps();
@@ -32,6 +33,7 @@ class Questions extends React.Component {
         this.setState({ updating: true });
         changed = true;
         total = res;
+        //not necessary, update store state w. result directly
         contract.methods.getQuestionsTotal.cacheCall();
       }
     }).then(() => {
@@ -44,7 +46,7 @@ class Questions extends React.Component {
         //an oracle service w. cache/rdbms for more efficient data retrieval. Even
         //if I batch the props update to a single render, it'll still be a bunch of
         //separate calls since there's no good way to return objects from blockchain
-        let nextKey = contract.methods.getQuestionText.cacheCall(i);
+        let nextKey = contract.methods.getQuestion.cacheCall(i);
         dataKeys.push(nextKey);
       }
       this.setState({ dataKeys, updating: false });
@@ -57,20 +59,31 @@ class Questions extends React.Component {
     let questions = [];
 
     this.state.dataKeys.forEach(key => {
-      let nextQuestion = store.getQuestionText[key];
+      let nextQuestion = store.getQuestion[key];
       nextQuestion && questions.push(nextQuestion);
     });
 
-    return questions.map(question => {
+    return questions.map((question,i) => {
+      const questionId = i+1;
+      let values = question.value;
+      //question has form [askerAddress, questionText, questionAnswer, requestedResponder]
       return (
-        <p key={question.value}>{question && question.value}</p>
+        <IndividualQuestion
+          key={questionId}
+          askerAddress={values[0]}
+          questionText={values[1]}
+          answer={values[2]}
+          requestedResponder={values[3]}
+          questionId={questionId}
+          {...this.props}
+        />
       );
     });
   }
 
   render() {
     return (
-      <div>
+      <div className="show-questions">
         Asked Questions:
         {this._renderQuestions()}
       </div>

@@ -45,7 +45,7 @@ contract('QAOracle', (walletAddresses) => {
 
   beforeEach(async() => {
     contract = await QAOracleContract.new();
-    contract.sendTokens(asker, 10);
+    contract.mint(asker, 10);
   });
 
   it('should create a contract', async() => {
@@ -120,7 +120,7 @@ contract('QAOracle', (walletAddresses) => {
     it('should allow an asked question to be answered', async() => {
       await contract.askQuestion(q1, { from: asker });
       const qId = await _getIdFromQuestionCreate(contract);
-      await contract.answerQuestion(qId, aAddress1, a1);
+      await contract.answerQuestion(qId, a1);
       const res = await contract.getQuestionAnswer(qId);
       res.should.equal(a1);
     });
@@ -128,7 +128,7 @@ contract('QAOracle', (walletAddresses) => {
     it('should emit an "answerQuestion" event when a question is answered', async() => {
       await contract.askQuestion(q1, { from: asker });
       const qId = await _getIdFromQuestionCreate(contract);
-      await contract.answerQuestion(qId, aAddress1, a1);
+      await contract.answerQuestion(qId, a1);
       await helpers.assertEvent(
         contract.QuestionAnswered(),
         { qId: qId, aText: a1},
