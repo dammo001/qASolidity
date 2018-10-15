@@ -94,10 +94,6 @@ contract('QAOracle', (walletAddresses) => {
       );
     });
 
-    it("should not allow a question to be added if the asker does not have tokens", async() => {
-      await helpers.expectThrow(contract.askQuestion(q1, { from: qAddress2 }));
-    });
-
     it('should return an empty string if there is no question for that questionId', async() => {
       await contract.askQuestion(q1);
       const qId = await _getIdFromQuestionCreate(contract);
@@ -130,6 +126,22 @@ contract('QAOracle', (walletAddresses) => {
       totalQuestions.should.equal('2');
     });
 
+    it("should not allow a question to be added if the asker does not have tokens", async() => {
+      await helpers.expectThrow(contract.askQuestion(q1, { from: qAddress2 }));
+    });
+
+    it('should create an allowance of 1 for the owner from the asker', async() => {
+      const initialAllowance = await contract.allowance(asker, owner);
+      initialAllowance.toString().should.equal('0');
+      const check = await contract.askQuestion(q1, { from: asker });
+      await helpers.assertEvent(
+        contract.QuestionUpdated(),
+        { askerAddress: asker, qId: '1', qText: q1 },
+      );
+      const finalAllowance = await contract.allowance(asker, owner);
+      finalAllowance.toString().should.equal('1');
+    });
+
   });
 
   describe('answering a question', () => {
@@ -156,6 +168,15 @@ contract('QAOracle', (walletAddresses) => {
       const qId = await _getIdFromQuestionCreate(contract);
       await contract.assignQuestion(qId, qAddress2, { from: asker });
       await helpers.expectThrow(contract.answerQuestion(qId, '', { from: qAddress2 }));
+    });
+
+    it('should increase the answerer"s token count by 1', async() => {
+      const startingAmount = await contract.getAcctBalance(qAddress2);
+      await contract.askQuestion(q1, { from: asker });
+      const qId = await _getIdFromQuestionCreate(contract);
+      await contract.answerQuestion(qId, a1, { from: qAddress2 });
+      const finalAmount = await contract.getAcctBalance(qAddress2);
+      (Number(finalAmount)-Number(startingAmount)).should.equal(1);
     });
   });
 

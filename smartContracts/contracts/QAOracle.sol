@@ -93,7 +93,7 @@ contract QAOracle is QAToken {
       );
   }
 
-  //TODO figure out correct return type for frontend, bignum causes error
+  //TODO is this helper function necessary for returning uint?
   function getQuestionsTotal() public view returns(string) {
     return _uint2str(_questionId);
   }
