@@ -23,7 +23,7 @@ class SpecifyUser extends React.Component {
   render() {
     if (this.props.requestedResponder && this.props.requestedResponder !== NULL_VALUE) {
       return (
-        <div>
+        <div className="assigned">
           Your question has been assigned to {this.props.requestedResponder}.
         </div>
       )
@@ -32,7 +32,7 @@ class SpecifyUser extends React.Component {
       <Fragment>
         <input  type="text" onChange={this.onChange} value={this.state.value} />
         <button className="btn btn-success" onClick={this.handleClick}>
-          Request a response from this address
+          Request response
         </button>
       </Fragment>
 

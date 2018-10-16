@@ -81,10 +81,15 @@ class Questions extends React.Component {
   }
 
   render() {
+    const questions = this._renderQuestions();
+    if (!questions || !questions.length) return null;
     return (
-      <div className="show-questions">
-        Asked Questions:
-        {this._renderQuestions()}
+      <div className="Show-questions row">
+        <h2>Asked Questions: </h2>
+        <div className="disclaimer col-sm-12">note: you cannot answer questions that you asked or that were assigned to someone else</div>
+        <div className="col-sm-12">
+          {questions}
+        </div>
       </div>
     );
   }

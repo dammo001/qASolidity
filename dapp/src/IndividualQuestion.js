@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import SpecifyUser from './SpecifyUser';
 
 class IndividualQuestion extends React.Component {
@@ -33,10 +33,10 @@ class IndividualQuestion extends React.Component {
   _showAnswerInput = () => {
     if (this.props.drizzleState.accounts[0] === this.props.askerAddress) return null;
     return (
-      <Fragment>
-        <input type="text" onChange={this.onChange} value={this.state.value} />
-        <button className="btn btn-primary" onClick={this._answerQuestion}>Answer this question</button>
-      </Fragment>
+      <div className="col-sm-12">
+        <input className="col-sm-8" type="text" onChange={this.onChange} value={this.state.value} />
+        <button className="col-sm-4 btn btn-primary response-button" onClick={this._answerQuestion}>Respond</button>
+      </div>
     );
   }
 
@@ -44,7 +44,7 @@ class IndividualQuestion extends React.Component {
     if (!answer) return null;
     return (
       <div className="answer">
-        {answer}
+        Answer: {answer}
       </div>
     );
   }
@@ -55,7 +55,7 @@ class IndividualQuestion extends React.Component {
       <button className="btn btn-secondary" onClick={() =>
         this.setState({ showSpecifyAnswer: !this.state.showSpecifyAnswer })
       }>
-        Request a response from a specific user
+        Assign
       </button>
     );
   }
@@ -73,13 +73,19 @@ class IndividualQuestion extends React.Component {
     const { store } = this._getContractProps();
     let answer = store.getQuestion[this.state.qKey];
     answer = answer && answer.value && answer.value[3];
+    const parentClass = answer ? "answered" : "";
 
     return (
-      <div className="individual-question">
-        {this.props.questionText}
+      <div className={`individual-question ${parentClass}`}>
+        <div className="question">
+          <span className="asked-question-text">{this.props.questionText}</span>
+          <div className="buttons-holder">
+            {!answer && this._showAnswerInput()}
+            {this._renderSpecifyAnswer()}
+          </div>
+        </div>
+
         {this._renderAnswer(answer)}
-        {!answer && this._showAnswerInput()}
-        {this._renderSpecifyAnswer()}
         {this._showSpecifyInput()}
       </div>
     );

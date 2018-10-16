@@ -39,9 +39,10 @@ class AskQuestion extends React.Component {
 
   render() {
     return (
-      <div className="form-group ask-question">
-        <label className="col-sm-2 control-label">Ask a question!</label>
-        <input className="form-control" id="ask-question" type="text" onChange={this.onChange} value={this.state.value}/>
+      <div className="Ask-question row">
+        <h2>Ask a question:</h2>
+        <label className="col-sm-12 control-label question-label">Get tokens first if you don't have any.</label>
+        <input className="col sm-9" id="ask-question" type="text" onChange={this.onChange} value={this.state.value}/>
         <button className="btn btn-success" onClick={this.handleClick}>Submit your question</button>
         <div>{this.getTxStatus()}</div>
       </div>

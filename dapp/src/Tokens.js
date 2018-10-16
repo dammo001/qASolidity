@@ -22,7 +22,7 @@ class Tokens extends React.Component {
   _addTokensButton(currentTokens) {
     if (!currentTokens || currentTokens < 1) {
       return (
-        <button onClick={this._getTokens}>Get Tokens!</button>
+        <button className="btn btn-info" onClick={this._getTokens}>Get Tokens!</button>
       );
     }
   }
@@ -38,9 +38,9 @@ class Tokens extends React.Component {
     const currentTokens = store.getAcctBalance[this.state.totalsKey];
 
     return (
-      <div className="tokens">
-        <div>You currently have: {currentTokens && currentTokens.value} tokens with which to ask a question</div>
-        {currentTokens && this._addTokensButton(currentTokens.value)}
+      <div className="row Tokens">
+        <div className="col-md-12">You currently have <b>{currentTokens && currentTokens.value}</b> tokens with which to ask a question.</div>
+        <div className="col-md-12">{currentTokens && this._addTokensButton(currentTokens.value)}</div>
       </div>
     );
   }

@@ -30,7 +30,7 @@ class App extends Component {
   render() {
     if (this.state.loading) return "Loading App...";
     return (
-      <div className="App">
+      <div className="App container">
         <Tokens
           drizzle={this.props.drizzle}
           drizzleState={this.state.drizzleState}
